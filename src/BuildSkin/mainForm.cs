@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
+using System.IO;
 using System.Windows.Forms;
 using System.Xml;
 using NCalc;
@@ -59,7 +60,7 @@ namespace buildSkin {
 			}
 
 			//Check For Existing Skin, Only Overwriting If Configured To
-			if ( !System.IO.Directory.Exists ( "./Skins/" + this.skinsList.Text ) || !this.settingsConfirmation.Checked ||
+			if ( !Directory.Exists ( "./Skins/" + this.skinsList.Text ) || !this.settingsConfirmation.Checked ||
 				MessageBox.Show ( "Do you want to overwrite the previous skin?" , "Confirmation" , MessageBoxButtons.YesNo ) == System.Windows.Forms.DialogResult.Yes ) {
 				//Set Up A Few Variables
 				List<string> configLines = new List<string> ();
@@ -80,7 +81,7 @@ namespace buildSkin {
 					this.statusProgress.Increment ( 1 );
 
 					//Make Sure Chosen Option Is Valid
-					if ( row.Cells [ "customOptions" ].Value.ToString () != "--" && System.IO.File.Exists ( "./Elements/" + row.Cells [ "customCategory" ].Value.ToString () + "/" +
+					if ( row.Cells [ "customOptions" ].Value.ToString () != "--" && File.Exists ( "./Elements/" + row.Cells [ "customCategory" ].Value.ToString () + "/" +
 						row.Cells [ "customName" ].Value.ToString () + "/" + row.Cells [ "customOptions" ].Value.ToString () + ".xml" ) ) {
 						//Save Skin Configuration
 						configLines.Add ( row.Cells [ "customCategory" ].Value.ToString () + ">" + row.Cells [ "customName" ].Value.ToString () + "=" + row.Cells [ "customOptions" ].Value.ToString () );
@@ -115,8 +116,8 @@ namespace buildSkin {
 				}
 
 				//Write Files
-				System.IO.Directory.CreateDirectory ( "./Skins/" + this.skinsList.Text );
-				System.IO.File.WriteAllLines ( "./Skins/" + this.skinsList.Text + "/BuildSkin" , configLines.ToArray () );
+				Directory.CreateDirectory ( "./Skins/" + this.skinsList.Text );
+				File.WriteAllLines ( "./Skins/" + this.skinsList.Text + "/BuildSkin" , configLines.ToArray () );
 				this.skinXML.Save ( "./Skins/" + this.skinsList.Text + "/SkinDefinition.xml" );
 
 				//Finish Up
@@ -209,9 +210,9 @@ namespace buildSkin {
 			}
 
 			//Rename The Skin
-			if ( !System.IO.Directory.Exists ( "Skins/" + newName ) || !this.settingsConfirmation.Checked ||
+			if ( !Directory.Exists ( "Skins/" + newName ) || !this.settingsConfirmation.Checked ||
 				MessageBox.Show ( "Are you sure you want to overwrite the skin '" + newName + "'?" , "Confirmation" , MessageBoxButtons.YesNo ) == DialogResult.Yes ) {
-				System.IO.Directory.Move ( "Skins/" + this.skinsList.SelectedItem , "Skins/" + newName );
+				Directory.Move ( "Skins/" + this.skinsList.SelectedItem , "Skins/" + newName );
 				this.statusText.Text = "Skin " + this.skinsList.SelectedItem + " successfully renamed to " + newName + "!";
 			}
 
@@ -232,8 +233,8 @@ namespace buildSkin {
 			if ( !this.settingsConfirmation.Checked ||
 				MessageBox.Show ( "Are you sure you want to delete the skin '" + this.skinsList.SelectedItem + "'?" , "Confirmation" , MessageBoxButtons.YesNo ) == DialogResult.Yes ) {
 				if ( this.settingsNoRecycle.Checked ) {
-					if ( System.IO.Directory.Exists ( "Skins/" + this.skinsList.SelectedItem ) ) {
-						System.IO.Directory.Delete ( "Skins/" + this.skinsList.SelectedItem , true );
+					if ( Directory.Exists ( "Skins/" + this.skinsList.SelectedItem ) ) {
+						Directory.Delete ( "Skins/" + this.skinsList.SelectedItem , true );
 						this.statusText.Text = "Skin " + this.skinsList.SelectedItem + " successfully deleted!";
 					}
 				} else {
@@ -253,7 +254,7 @@ namespace buildSkin {
 			}
 
 			//Check For Required Files
-			if ( System.IO.File.Exists ( "./Skins/" + this.skinsList.SelectedItem + "/SkinDefinition.xml" ) && System.IO.File.Exists ( this.settingsEditorPath.Text ) ) {
+			if ( File.Exists ( "./Skins/" + this.skinsList.SelectedItem + "/SkinDefinition.xml" ) && File.Exists ( this.settingsEditorPath.Text ) ) {
 				//Start Editor (Do Not Wait For Exit)
 				Process procEditor = new Process ();
 				procEditor.StartInfo = new ProcessStartInfo ( this.settingsEditorPath.Text , "\"Skins/" + this.skinsList.SelectedItem + "/SkinDefinition.xml\"" );
@@ -274,8 +275,8 @@ namespace buildSkin {
 			}
 
 			//Refill Table
-			if ( System.IO.File.Exists ( "./Skins/" + this.skinsList.SelectedItem + "/BuildSkin" ) ) {
-				foreach ( string line in System.IO.File.ReadAllLines ( "./Skins/" + this.skinsList.SelectedItem + "/BuildSkin" ) ) {
+			if ( File.Exists ( "./Skins/" + this.skinsList.SelectedItem + "/BuildSkin" ) ) {
+				foreach ( string line in File.ReadAllLines ( "./Skins/" + this.skinsList.SelectedItem + "/BuildSkin" ) ) {
 					foreach ( DataGridViewRow row in this.skinsCustomize.Rows ) {
 						if ( row.Cells [ "customCategory" ].Value.ToString () + ">" + row.Cells [ "customName" ].Value.ToString () == line.Split ( '=' ) [ 0 ] ) {
 							if ( ( ( DataGridViewComboBoxCell ) row.Cells [ "customOptions" ] ).Items.Contains ( line.Split ( '=' ) [ 1 ] ) ) {
@@ -312,8 +313,8 @@ namespace buildSkin {
 			this.skinsList.Items.Clear ();
 			this.skinsList.Text = String.Empty;
 
-			if ( System.IO.Directory.Exists ( "Skins" ) ) {
-				foreach ( string skin in System.IO.Directory.GetDirectories ( "./Skins" ) ) {
+			if ( Directory.Exists ( "Skins" ) ) {
+				foreach ( string skin in Directory.GetDirectories ( "./Skins" ) ) {
 					//Remove "./Skins/" From Each Item
 					this.skinsList.Items.Add ( skin.Remove ( 0 , 8 ) );
 				}
@@ -330,15 +331,15 @@ namespace buildSkin {
 			this.skinsCustomize.Rows.Clear ();
 
 			//Make Sure Directory Exists
-			if ( System.IO.Directory.Exists ( "Elements" ) ) {
+			if ( Directory.Exists ( "Elements" ) ) {
 				//Iterate Through Each Element In Each Category
-				foreach ( string category in System.IO.Directory.GetDirectories ( "Elements" ) ) {
-					foreach ( string element in System.IO.Directory.GetDirectories ( category ) ) {
+				foreach ( string category in Directory.GetDirectories ( "Elements" ) ) {
+					foreach ( string element in Directory.GetDirectories ( category ) ) {
 						//Add Row With Name And Category (Minus Leading Paths)
 						this.skinsCustomize.Rows.Add ( category.Replace ( "Elements\\" , string.Empty ) , element.Replace ( category + "\\" , string.Empty ) );
 
 						//Populate Options
-						foreach ( string option in System.IO.Directory.GetFiles ( element , "*.xml" ) ) {
+						foreach ( string option in Directory.GetFiles ( element , "*.xml" ) ) {
 							( ( DataGridViewComboBoxCell ) this.skinsCustomize.Rows [ this.skinsCustomize.RowCount - 1 ].Cells [ "customOptions" ] ).Items.Add ( option.Replace ( element + "\\" , string.Empty ).Replace ( ".xml" , string.Empty ) );
 						} ( ( DataGridViewComboBoxCell ) this.skinsCustomize.Rows [ this.skinsCustomize.RowCount - 1 ].Cells [ "customOptions" ] ).Items.Add ( "--" );
 						( ( DataGridViewComboBoxCell ) this.skinsCustomize.Rows [ this.skinsCustomize.RowCount - 1 ].Cells [ "customOptions" ] ).Value = "--";
@@ -429,10 +430,10 @@ namespace buildSkin {
 		}
 
 		private void addonRefreshLocal ( object o , LinkLabelLinkClickedEventArgs e ) {
-			if ( System.IO.File.Exists ( "LocalAddons.conf" ) ) {
+			if ( File.Exists ( "LocalAddons.conf" ) ) {
 				//Read Local List
 				List<string> localList = new List<string> ();
-				localList.AddRange ( System.IO.File.ReadAllLines ( "LocalAddons.conf" ) );
+				localList.AddRange ( File.ReadAllLines ( "LocalAddons.conf" ) );
 
 				//Fill and Update Table
 				int found = 0;
@@ -482,7 +483,7 @@ namespace buildSkin {
 				}
 			}
 
-			System.IO.File.WriteAllLines ( "LocalAddons.conf" , localList.ToArray () );
+			File.WriteAllLines ( "LocalAddons.conf" , localList.ToArray () );
 		}
 
 		private void addonDelete ( object o , LinkLabelLinkClickedEventArgs e ) {
@@ -518,27 +519,27 @@ namespace buildSkin {
 			string id = this.addonsDataGrid.Rows [ rowIndex ].Cells [ "addonsID" ].Value.ToString ();
 			List<string> dirs = new List<string> ();
 
-			if ( System.IO.File.Exists ( "Addons/" + id + ".conf" ) ) {
+			if ( File.Exists ( "Addons/" + id + ".conf" ) ) {
 				//Remove Files First
-				foreach ( string file in System.IO.File.ReadAllLines ( "Addons/" + id + ".conf" ) ) {
-					if ( ( System.IO.File.GetAttributes ( file ) & System.IO.FileAttributes.Directory ) == System.IO.FileAttributes.Directory ) {
+				foreach ( string file in File.ReadAllLines ( "Addons/" + id + ".conf" ) ) {
+					if ( ( File.GetAttributes ( file ) & FileAttributes.Directory ) == FileAttributes.Directory ) {
 						//Save Processing Directories For Later
 						dirs.Add ( file );
 					} else {
-						System.IO.File.Delete ( file );
+						File.Delete ( file );
 					}
 				}
 
 				//Remove Empty Directories
 				foreach ( string dir in dirs ) {
-					if ( System.IO.Directory.Exists ( dir ) &&
-						System.IO.Directory.GetFiles ( dir , "*" , System.IO.SearchOption.AllDirectories ).Length == 0 ) {
-						System.IO.Directory.Delete ( dir , true );
+					if ( Directory.Exists ( dir ) &&
+						Directory.GetFiles ( dir , "*" , SearchOption.AllDirectories ).Length == 0 ) {
+						Directory.Delete ( dir , true );
 					}
 				}
 
 				//Delete file list
-				System.IO.File.Delete ( "Addons/" + id + ".conf" );
+				File.Delete ( "Addons/" + id + ".conf" );
 			} else {
 				MessageBox.Show ( "The addon " + this.addonsDataGrid.Rows [ rowIndex ].Cells [ "addonsName" ].Value.ToString () +
 					" was not installed by BuildSkin and therefore cannot be deleted by it." );
@@ -560,10 +561,10 @@ namespace buildSkin {
 					}
 
 					//Set Up
-					System.IO.Directory.CreateDirectory ( "Addons" );
+					Directory.CreateDirectory ( "Addons" );
 					string file = "Addons/" + row.Cells [ "addonsFile" ].Value.ToString ();
 
-					if ( !System.IO.File.Exists ( file ) ) {
+					if ( !File.Exists ( file ) ) {
 						//Download
 						this.statusText.Text = "Downloading " + row.Cells [ "addonsFile" ].Value.ToString ();
 						System.Net.WebClient client = new System.Net.WebClient ();
@@ -589,7 +590,7 @@ namespace buildSkin {
 					//Save File List
 					string [] files = new string [ zip.ArchiveFileNames.Count ];
 					zip.ArchiveFileNames.CopyTo ( files , 0 );
-					System.IO.File.WriteAllLines ( "Addons/" + row.Cells [ "addonsID" ].Value.ToString () + ".conf" , files );
+					File.WriteAllLines ( "Addons/" + row.Cells [ "addonsID" ].Value.ToString () + ".conf" , files );
 
 					//Set Installed + Version
 					row.Cells [ "addonsInstVer" ].Value = row.Cells [ "addonsVersion" ].Value;
@@ -630,8 +631,8 @@ namespace buildSkin {
 
 		private void settingLoad ( object o , LinkLabelLinkClickedEventArgs e ) {
 			//Load From File, Allowing For Case Differences
-			if ( System.IO.File.Exists ( "BuildSkin.conf" ) ) {
-				string [] configLines = System.IO.File.ReadAllLines ( "BuildSkin.conf" );
+			if ( File.Exists ( "BuildSkin.conf" ) ) {
+				string [] configLines = File.ReadAllLines ( "BuildSkin.conf" );
 				this.settingsTranslucent.Checked = ( configLines [ 0 ].ToLowerInvariant () == "true" );
 				this.settingsTransMax.Checked = ( configLines [ 1 ].ToLowerInvariant () == "true" );
 				this.settingsAutoLoad.Checked = ( configLines [ 2 ].ToLowerInvariant () == "true" );
@@ -651,7 +652,7 @@ namespace buildSkin {
 			//Put Settings In A String Array, And Write To File
 			string [] resolutions = new string [ this.settingsResolution.Items.Count ];
 			this.settingsResolution.Items.CopyTo ( resolutions , 0 );
-			System.IO.File.WriteAllLines ( "BuildSkin.conf" , new string [] {
+			File.WriteAllLines ( "BuildSkin.conf" , new string [] {
 				this.settingsTranslucent.Checked.ToString(),
 				this.settingsTransMax.Checked.ToString(),
 				this.settingsAutoLoad.Checked.ToString(),
@@ -715,7 +716,7 @@ namespace buildSkin {
 		private void openReadMe ( object o , LinkLabelLinkClickedEventArgs e ) {
 			//TODO: Write README
 			//Open Default Handler For Text Files
-			Process.Start ( new System.IO.FileInfo ( "Readme.txt" ).FullName );
+			Process.Start ( new FileInfo ( "Readme.txt" ).FullName );
 		}
 
 		//Initial Default/Empty Variables
