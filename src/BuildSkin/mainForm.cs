@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Windows.Forms;
 using System.Xml;
 using NCalc;
@@ -254,8 +255,8 @@ namespace buildSkin {
 			//Check For Required Files
 			if ( System.IO.File.Exists ( "./Skins/" + this.skinsList.SelectedItem + "/SkinDefinition.xml" ) && System.IO.File.Exists ( this.settingsEditorPath.Text ) ) {
 				//Start Editor (Do Not Wait For Exit)
-				System.Diagnostics.Process procEditor = new System.Diagnostics.Process ();
-				procEditor.StartInfo = new System.Diagnostics.ProcessStartInfo ( this.settingsEditorPath.Text , "\"Skins/" + this.skinsList.SelectedItem + "/SkinDefinition.xml\"" );
+				Process procEditor = new Process ();
+				procEditor.StartInfo = new ProcessStartInfo ( this.settingsEditorPath.Text , "\"Skins/" + this.skinsList.SelectedItem + "/SkinDefinition.xml\"" );
 				procEditor.Start ();
 			}
 		}
@@ -699,12 +700,12 @@ namespace buildSkin {
 		}
 
 		private void goToLI ( object o , LinkLabelLinkClickedEventArgs e ) {
-			System.Diagnostics.Process.Start ( "http://www.lotrointerface.com/downloads/info623-BuildSkin.html" );
+			Process.Start ( "http://www.lotrointerface.com/downloads/info623-BuildSkin.html" );
 		}
 
 		private void goToMevordel ( object o , LinkLabelLinkClickedEventArgs e ) {
 			//TODO: Make Real Website :)
-			//System.Diagnostics.Process.Start("http://mevordel.usgrd.com/");
+			//Process.Start("http://mevordel.usgrd.com/");
 		}
 
 		private void goToMITLicense ( object o , LinkLabelLinkClickedEventArgs e ) {
@@ -714,7 +715,7 @@ namespace buildSkin {
 		private void openReadMe ( object o , LinkLabelLinkClickedEventArgs e ) {
 			//TODO: Write README
 			//Open Default Handler For Text Files
-			System.Diagnostics.Process.Start ( new System.IO.FileInfo ( "Readme.txt" ).FullName );
+			Process.Start ( new System.IO.FileInfo ( "Readme.txt" ).FullName );
 		}
 
 		//Initial Default/Empty Variables
